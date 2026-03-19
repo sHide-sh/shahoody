@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" dir="rtl">
+  <title>حب · لعبة متكاملة</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      background: #0b0b1a;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      padding: 12px;
+      touch-action: pan-y pinch-zoom; 
+    }
+
+    .box {
+      z-index: 10;
+      background: rgba(30, 20, 40, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 24px 16px;
+      border-radius: 36px;
+      border: 1px solid rgba(255, 200, 220, 0.2);
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 0 0 20px 0;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: #ffeef2;
+      padding: 0 5px;
+    }
+
+    #answers {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      min-height: 130px;
+      width: 100%;
+    }
+
+    button {
+      margin: 0;
+      padding: 16px 10px;
+      border: none;
+      border-radius: 60px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 600;
+      background: #ffb6c9;
+      color: #1a1020;
+      width: 220px;
+      max-width: 85%;
+      box-shadow: 0 8px 0 #a04868, 0 6px 16px rgba(255, 150, 200, 0.5);
+      transition: background 0.2s, transform 0.1s ease, box-shadow 0.1s;
+      border: 2px solid #ffdbea;
+      touch-action: manipulation;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .q1-blue, .q4-blue {
+      background: #6c8cff !important;
+      box-shadow: 0 8px 0 #2b4ba0 !important;
+      border: 2px solid #aac3ff !important;
+    }
+
+    button:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #a04868;
+    }
+
+    .escape-btn {
+      position: relative;
+      transition: transform 0.2s ease-out;
+      will-change: transform;
+      z-index: 30;
+      background: #ff9eb5;
+      box-shadow: 0 8px 0 #b04a60;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .shake {
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0px, 0px); }
+      20% { transform: translate(6px, -4px); }
+      40% { transform: translate(-6px, 5px); }
+      60% { transform: translate(4px, 4px); }
+      80% { transform: translate(-3px, -3px); }
+      100% { transform: translate(0px, 0px); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="box" id="box">
+  <h2 id="question">جاري التحضير</h2>
+  <div id="answers"></div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+
+  let particles = [];
+  let infiniteExplosion = false;
+
+  class Particle {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.size = Math.random() * 5 + 2;
+      // أبطأ بكثير في النهاية
+      this.speedX = (Math.random() - 0.5) * 1.2;
+      this.speedY = (Math.random() - 0.5) * 1.2;
+      this.color = `hsl(${Math.random() * 360}, 100%, 65%)`;
+      this.life = 150; // حياة أطول
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.life--;
+    }
+    draw() {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function createExplosion(x, y) {
+    for (let i = 0; i < 50; i++) {
+      particles.push(new Particle(x, y));
+    }
+  }
+
+  function animate() {
+    ctx.fillStyle = 'rgba(10, 5, 15, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (infiniteExplosion) {
+      createExplosion(Math.random() * canvas.width, Math.random() * canvas.height);
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw();
+      if (particles[i].life <= 0) particles.splice(i, 1);
+    }
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // ---------- QUIZ ----------
+  const quiz = [
+    { q: "أحبك أكثر صح؟", answers: ["نعم", "لا"] },
+    { q: "طيب عديتِ الأول.. بس هالمرة صدق أحبك أكثر غصب", answers: ["نعم", "لا"] },
+    { q: "شوفي هو انا جبتها غصب بس لسع احس ما تحسب اذا مو برضاك \n ولكن هالمرة بجيبك (: ", answers: ["كمل"] },
+    { q: "خلاص اعترفي, انا احبك اكثر؟", answers: ["نعم", "لا"] }
+  ];
+
+  let current = 0;
+
+  // State for tricks
+  let q1NoCount = 0;
+  let swappedQ1 = false;
+  let q1Wait = false;
+
+  let q2YesCount = 0;
+
+  // Final question (index 3)
+  let q4NoCount = 0;
+  let q4Swapped = false;        // swap texts after 5th No
+  let stopEscape = false;       // if Yes clicked
+
+  function moveButtonFar(btn, boxElement) {
+    if (!btn || !boxElement || stopEscape || q1Wait) return; // أثناء الانتظار ما يتحرك
+    const boxRect = boxElement.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+
+    const btnLeft = btnRect.left - boxRect.left;
+    const btnTop = btnRect.top - boxRect.top;
+
+    const minDx = -btnLeft;
+    const maxDx = boxRect.width - btnRect.width - btnLeft;
+    const minDy = -btnTop;
+    const maxDy = boxRect.height - btnRect.height - btnTop;
+
+    let dx = (Math.random() * 220 - 110);
+    let dy = (Math.random() * 220 - 110);
+
+    dx = Math.min(maxDx, Math.max(minDx, dx));
+    dy = Math.min(maxDy, Math.max(minDy, dy));
+
+    btn.style.transform = `translate(${dx}px, ${dy}px)`;
+  }
+
+  function shakeScreen() {
+    const box = document.getElementById('box');
+    box.classList.add('shake');
+    setTimeout(() => box.classList.remove('shake'), 400);
+  }
+
+  function loadQuestion() {
+    const qEl = document.getElementById('question');
+    const aEl = document.getElementById('answers');
+
+    if (current >= quiz.length) {
+      qEl.innerHTML = '<span style="text-size: 16px;" dir="rtl"><br><br><br><br>استسلم، أحبك وانتِ اللي تحبيني اكثر  🤍🤍 <br><br> وكل عام وانتِ شهودتي وانتِ بالف خير معااي ياقلبي 🎉🎊🤍</span>';
+      aEl.innerHTML = "";
+      infiniteExplosion = true;
+      return;
+    }
+
+    qEl.innerText = quiz[current].q;
+    aEl.innerHTML = "";
+
+    // Get answers and apply swaps
+    let answers = [...quiz[current].answers];
+
+    // ----- SWAPS: تبديل النصوص -----
+    if (current === 0 && swappedQ1) {
+      answers = ["لا", "نعم"];
+    }
+    
+    // السؤال الأخير (رقم 3) - التبديل هنا
+    if (current === 3 && q4Swapped) {
+      answers = ["لا", "نعم"];
+      console.log("Swapped final question texts to:", answers);
+    }
+
+    // Create buttons
+    answers.forEach((ansText) => {
+      const btn = document.createElement('button');
+      btn.innerText = ansText;
+
+      // أزرق للسؤال الأول إذا مبدل
+      if (current === 0 && swappedQ1) {
+        btn.classList.add('q1-blue');
+      }
+      
+      // أزرق للسؤال الأخير إذا مبدل
+      if (current === 3 && q4Swapped) {
+        btn.classList.add('q4-blue');
+      }
+
+      // Final question movable "لا" – يتحرك 5 مرات
+      if (current === 3 && ansText === "لا" && !stopEscape) {
+        btn.classList.add('escape-btn');
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // يتحرك فقط إذا العداد أقل من 5 وما صار تبديل ومافي وقف
+          if (q4NoCount < 5 && !q4Swapped && !stopEscape && !q1Wait) {
+            moveButtonFar(btn, document.getElementById('box'));
+          }
+        });
+      }
+
+      btn.onclick = (e) => {
+        e.stopPropagation();
+
+        // ----- QUESTION 1 -----
+        if (current === 0) {
+          if (q1Wait) return;
+
+          if (btn.innerText === "نعم") {
+            alert("ترى فيها خدعة اصبري بس"); // 1- التنبيه
+            return;
+          } else { // "لا"
+            q1NoCount++;
+            shakeScreen();
+
+            if (q1NoCount === 3) {
+              swappedQ1 = true;
+              q1Wait = true;
+              loadQuestion();
+
+              setTimeout(() => {
+                q1Wait = false;
+              }, 1000);
+            } else if (q1NoCount >= 4) {
+              current++;
+              loadQuestion();
+            }
+            return;
+          }
+        }
+
+        // ----- QUESTION 2 -----
+        if (current === 1) {
+          shakeScreen();
+          if (btn.innerText === "نعم") {
+            q2YesCount++;
+            if (q2YesCount === 1) {
+              current++;
+              loadQuestion();
+            }
+          }
+          return;
+        }
+
+        // ----- QUESTION 3 (single button) -----
+        if (current === 2) {
+          current++;
+          loadQuestion();
+          return;
+        }
+
+        // ----- QUESTION 4 (final trick - "خلاص اعترفي") -----
+        if (current === 3) {
+          if (btn.innerText === "نعم") {
+            shakeScreen();
+            loadQuestion();
+            return;
+          } else { // "لا"
+            if (stopEscape || q1Wait) {
+              shakeScreen();
+              return;
+            }
+
+            q4NoCount++;
+            console.log("Final question No count:", q4NoCount);
+            shakeScreen();
+
+            if (q4NoCount === 4) {  // 4- بعد 5 مرات يتبدل
+              q4Swapped = true;
+              console.log("Swapping final question now!");
+              loadQuestion();
+            } else if (q4NoCount >= 1) {  // السادسة تخلص
+              console.log("Moving to end from No count:", q4NoCount);
+              current++;
+              loadQuestion();
+            } else {
+              // أول 4 مرات: نحرك الزر (لأن التبديل يصير بالخامسة)
+              const box = document.getElementById('box');
+              moveButtonFar(btn, box);
+            }
+            return;
+          }
+        }
+      };
+
+      aEl.appendChild(btn);
+    });
+  }
+
+  // Start
+  loadQuestion();
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }, 30);
+  });
+
+})();
+</script>
+</body>
+</html>
