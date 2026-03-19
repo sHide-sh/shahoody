@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" dir="rtl">
-  <title>حب · لعبة متكاملة</title>
+  <title>مين يحب الثاني اكثر؟</title>
   <style>
     * {
       box-sizing: border-box;
@@ -141,7 +141,11 @@
 
   let particles = [];
   let infiniteExplosion = false;
-
+  function vibratePhone() {
+    if (navigator.vibrate) {
+      navigator.vibrate(200); // 200 ملي ثانية اهتزاز
+    }
+  }
   class Particle {
     constructor(x, y) {
       this.x = x;
@@ -309,6 +313,7 @@
           } else { // "لا"
             q1NoCount++;
             shakeScreen();
+            vibratePhone()
 
             if (q1NoCount === 3) {
               swappedQ1 = true;
@@ -328,6 +333,7 @@
 
         // ----- QUESTION 2 -----
         if (current === 1) {
+          vibratePhone()
           shakeScreen();
           if (btn.innerText === "نعم") {
             q2YesCount++;
@@ -341,6 +347,7 @@
 
         // ----- QUESTION 3 (single button) -----
         if (current === 2) {
+          vibratePhone()
           current++;
           loadQuestion();
           return;
@@ -354,6 +361,7 @@
             return;
           } else { // "لا"
             if (stopEscape || q1Wait) {
+              vibratePhone()
               shakeScreen();
               return;
             }
@@ -361,12 +369,13 @@
             q4NoCount++;
             console.log("Final question No count:", q4NoCount);
             shakeScreen();
+            vibratePhone();
 
             if (q4NoCount === 4) {  // 4- بعد 5 مرات يتبدل
               q4Swapped = true;
               console.log("Swapping final question now!");
               loadQuestion();
-            } else if (q4NoCount >= 1) {  // السادسة تخلص
+            } else if (q4NoCount >= 10) {  // السادسة تخلص
               console.log("Moving to end from No count:", q4NoCount);
               current++;
               loadQuestion();
